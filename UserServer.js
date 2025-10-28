@@ -8,7 +8,7 @@ import {WebSocketServer} from 'ws';
 
 dotenv.config({path: './DB.env'});
 
-import {Client, Pool} from "pg";
+import { Pool} from "pg";
 
 const app = express();
 app.use(express.json());
