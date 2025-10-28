@@ -17,7 +17,7 @@ const Signup = () => {
         event.preventDefault();
         try {
             if (!name || !email || !password) {
-                setErrorMessage("נא למלא את כל השדות");
+                setErrorMessage("please fill all");
                 return;
             }
             console.log("Before check", {name, email, password});
@@ -30,7 +30,11 @@ const Signup = () => {
                 );
                 console.log(newUser.data);
                 setErrorMessage("");
-                navigate("/chatPage", {state: {name: newUser.name, email: newUser.email}});
+                localStorage.setItem("user", JSON.stringify({
+                    email: newUser.data.email,
+                    name: newUser.data.name
+                }));
+                navigate("/chatPage", {state: {name: newUser.data.name, email: newUser.data.email}});
 
             } else {
                 setErrorMessage("user with this email already exist")

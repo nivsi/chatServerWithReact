@@ -17,6 +17,12 @@ const SignIn = () => {
             if (existUserFlag) {
                 const loginUser = await checkIfPasswordMatches();
                 if (loginUser) {
+                   localStorage.setItem("user", JSON.stringify(
+                       {
+                            name: loginUser.name,
+                            email: loginUser.email
+                       }
+                   ));
                     navigate("/chatPage", {state: {name: loginUser.name, email: loginUser.email}});
                 } else {
                     setErrorMessage("Invalid email or password");
@@ -43,7 +49,10 @@ const SignIn = () => {
     const checkIfPasswordMatches = async () => {
         try {
             const response = await axios.post(`http://localhost:3001/loginUser`, {email, password});
-            return response.data.userName;
+            return {
+                name: response.data.userName,
+                email: response.data.userEmail
+            };
         } catch (error) {
             if (error.response && error.response.status === 400) {
                 return null;
@@ -54,7 +63,6 @@ const SignIn = () => {
     return (
         <>
             <div className="login-page">
-
                 <form className='login-form-container'>
                     <h2 className="title">Login</h2>
                     <div className="login-form">

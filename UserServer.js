@@ -93,9 +93,9 @@ app.post("/createUser", async (req, res) => {
 app.post("/loginUser", async (req, res) => {
     const {email, password} = req.body;
     try {
-        const validUser = await checkMatchUser(email, password);
-        if (validUser) {
-            res.status(200).json({userName: validUser.name, userEmail: validUser.email});
+        const loginUser = await checkMatchUser(email, password);
+        if (loginUser) {
+            res.status(200).json({userName: loginUser.name, userEmail: loginUser.email});
         } else {
             res.status(400).json({error: "Invalid email or password"});
         }
@@ -127,6 +127,9 @@ app.post("/sendFriendRequest", async (req, res) => {
 
         res.status(200).json({message: "Friend request sent"});
     } catch (err) {
+        if (error.response && error.response.status === 400) {
+            setMessage("Friend request already sent");
+        }
         res.status(500).json({error: err.message});
     }
 

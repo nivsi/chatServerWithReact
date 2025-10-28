@@ -4,19 +4,22 @@ import {useState} from "react";
 import "./ChatPage.css";
 import ChatList from "./ChatList.jsx";
 import ChatWindow from "./ChatWindow.jsx";
-import ws from "ws";
-import axios from "axios";
+import AddFriendModal from "./AddFriendModal";
+import { useNavigate } from "react-router-dom";
+
 
 
 
 const ChatPage = () => {
     const wsRef = useRef(null);
     const location = useLocation();
-    const {name = "", email = ""} = location.state || {};
+    const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
+    const { name: stateName = "", email: stateEmail = "" } = location.state || {};
+
     const [showProfile, setShowProfile] = useState(false);
     const [showAddFriend, setShowAddFriend] = useState(false);
-    const [friendEmail, setFriendEmail] = useState("");
-    const [messageAfterAddFriend, setMessageAfterAddFriend] = useState("");
     //const [chats, setChats] = useState([]);
     const [currentChatId, setCurrentChatId] = useState(null);
     const [chatMessages, setChatMessages] = useState([]);
@@ -81,6 +84,30 @@ const ChatPage = () => {
         }
     ]);
 
+    //get user info from state or localstorage
+    useEffect(() => {
+        if(stateEmail)
+        {
+            setEmail(stateEmail);
+            setName(stateName);
+            console.log("got user from state" + stateEmail + " " + stateName);
+        }
+        else
+        {
+            const user = JSON.parse(localStorage.getItem("user"));
+            if(user)
+            {
+                setEmail(user.email);
+                setName(user.name);
+                console.log("got user from localstorage" + user.email + " " + user.name);
+            }
+            else
+            {
+                navigate("/SignIn");
+            }
+        }
+    }, []);
+    //websocket connection
     useEffect(() => {
         if (!wsRef.current) {
             wsRef.current = new WebSocket("ws://localhost:3001");
@@ -114,35 +141,6 @@ const ChatPage = () => {
             setTextInput("");
         }
     };
-    const addFriend = async () => {
-        if(checkValidEmail())
-        {
-            try {
-                const response = await axios.get(`http://localhost:3001/userExists/${encodeURIComponent(friendEmail)}`);
-                if(response.data.exists)
-                {
-                    setMessageAfterAddFriend("Friend added successfully!");
-                   await axios.post(`http://localhost:3001/sendFriendRequest`,
-                        {
-                            userEmail: email,
-                            friendEmail: friendEmail
-                        });
-
-                }
-            }
-            catch (error) {
-                setMessageAfterAddFriend("Error adding friend: " + error.message);
-            }
-        }
-
-
-
-    }
-
-    const checkValidEmail = () => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(friendEmail);
-    }
 
 
     return (
@@ -154,19 +152,11 @@ const ChatPage = () => {
                     <li className="add-new-friend" onClick={() => setShowAddFriend(true)}>Add Friend</li>
                 </ul>
                 {showAddFriend && (
-                    <div className="add-friend-modal">
-                        <h3 className="add-new-friend-title">Add New Friend</h3>
-                        <input className="input-add-friend" onChange={(e) => setFriendEmail(e.target.value)}
-                               placeholder="Friend's Email" />
-                        <button className="add-friend-button" onClick={addFriend} disabled={friendEmail === ""}>Add
-                        </button>
-                        <button className="close-add-friend-button" onClick={() => setShowAddFriend(false)}>Cancel
-                        </button>
-                        {messageAfterAddFriend && <p className="add-friend-message">{messageAfterAddFriend}</p>}
-                    </div>
-
-                )
-                }
+                    <AddFriendModal
+                        email={email}
+                        onClose={() => setShowAddFriend(false)}
+                    />
+                )}
             </nav>
             <div className="chat-container">
                 <aside className="chat-aside">

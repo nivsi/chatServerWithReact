@@ -34,9 +34,9 @@
 
 .add-friend-modal
 {
-    position: fixed;
+    position: fixed !important;
     top: 50%;
-    left: 50%;
+    left: 60%;
     transform: translate(-50%, -50%);
     width: 40%;
     height: 30%;
